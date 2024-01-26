@@ -1,8 +1,8 @@
 <?php
-$host = 'mysql217.phy.lolipop.lan';
-$dbname = 'LAA1517470-inful';
+$host = 'mysql220.phy.lolipop.lan';
+$dbname = 'LAA1517470-final';
 $user = 'LAA1517470';
-$pass = 'Influenza';
+$pass = 'Pass0522';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
@@ -10,86 +10,67 @@ try {
 } catch (PDOException $e) {
     exit("データベースに接続できませんでした。エラー: " . $e->getMessage());
 }
+// 音楽一覧表示
+function displayMusicList($conn) {
+    $stmt = $conn->prepare("SELECT * FROM Music");
+    $stmt->execute();
 
-// 初期化
-$error = '';
+    echo "<h2>音楽一覧</h2>";
+    echo "<table border='1'>
+            <tr>
+                <th>ID</th>
+                <th>音楽名</th>
+                <th>作曲者名</th>
+                <th>YouTube URL</th>
+                <th>操作</th>
+            </tr>";
+
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        echo "<tr>
+                <td>{$row['music_id']}</td>
+                <td>{$row['music_name']}</td>
+                <td>{$row['composer_name']}</td>
+                <td>{$row['youtube_url']}</td>
+                <td>
+                    <a href='edit.php?id={$row['music_id']}'>編集</a> |
+                    <a href='delete.php?id={$row['music_id']}'>削除</a>
+                </td>
+              </tr>";
+    }
+
+    echo "</table>";
+}
+
+// 新しい音楽を登録
+function addMusic($conn, $music_name, $composer_name, $youtube_url) {
+    $stmt = $conn->prepare("INSERT INTO Music (music_name, composer_name, youtube_url) VALUES (?, ?, ?)");
+    $stmt->execute([$music_name, $composer_name, $youtube_url]);
+}
+
+// 音楽情報を変更
+function editMusic($conn, $music_id, $music_name, $composer_name, $youtube_url) {
+    $stmt = $conn->prepare("UPDATE Music SET music_name=?, composer_name=?, youtube_url=? WHERE music_id=?");
+    $stmt->execute([$music_name, $composer_name, $youtube_url, $music_id]);
+}
+
+// 音楽を削除
+function deleteMusic($conn, $music_id) {
+    $stmt = $conn->prepare("DELETE FROM Music WHERE music_id=?");
+    $stmt->execute([$music_id]);
+}
+
+// 音楽一覧表示
+displayMusicList($conn);
+
+// 新しい音楽を登録（例）
+addMusic($conn, "新曲", "新しい作曲者", "https://www.youtube.com/new_song");
+
+// 音楽情報を変更（例）
+editMusic($conn, 1, "変更後の曲名", "変更後の作曲者", "https://www.youtube.com/changed_song");
+
+// 音楽を削除（例）
+deleteMusic($conn, 2);
+
+// データベース接続を閉じる
+$conn = null;
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>簡単な一覧表</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        th, td {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 8px;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        button {
-            padding: 5px;
-            margin: 5px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-<h2>一覧表</h2>
-
-<button onclick="addRow()">登録</button>
-<button onclick="deleteRow()">削除</button>
-<button onclick="editRow()">編集</button>
-
-<table id="data-table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- ここにデータが表示されます -->
-    </tbody>
-</table>
-
-<script>
-    function addRow() {
-        var table = document.getElementById("data-table").getElementsByTagName('tbody')[0];
-        var newRow = table.insertRow(table.rows.length);
-
-        var cell1 = newRow.insertCell(0);
-        var cell2 = newRow.insertCell(1);
-        var cell3 = newRow.insertCell(2);
-
-        cell1.innerHTML = "New ID";
-        cell2.innerHTML = "New Name";
-        cell3.innerHTML = "New Email";
-    }
-
-    function deleteRow() {
-        var table = document.getElementById("data-table").getElementsByTagName('tbody')[0];
-        if (table.rows.length > 0) {
-            table.deleteRow(table.rows.length - 1);
-        }
-    }
-
-    function editRow() {
-        // 編集ロジックをここに追加
-    }
-</script>
-
-</body>
-</html>
-
